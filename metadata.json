@@ -1,0 +1,6 @@
+{
+  "name": "ARCHIFORMA",
+  "description": "A simple, friendly 2D/3D architectural CAD and light BIM tool using AutoCAD and Revit commands and shortcuts.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
