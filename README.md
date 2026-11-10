@@ -1,20 +1,30 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# ARCHIFORMA — 2D/3D Architectural CAD & Light BIM
 
-# Run and deploy your AI Studio app
+A browser-based 2D/3D architectural CAD and light BIM tool with AutoCAD- and Revit-style commands and shortcuts.
 
-This contains everything you need to run your app locally.
+## Run locally
 
-View your app in AI Studio: https://ai.studio/apps/1773a4c3-f439-4b0f-b46c-54bc18f6da2c
+**Prerequisites:** Node.js 18+
 
-## Run Locally
+```bash
+npm install
+npm run dev
+```
 
-**Prerequisites:**  Node.js
+Then open http://localhost:3000.
 
+## Publish on GitHub Pages
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+This is a Vite + React + TypeScript project. Browsers can't run `.tsx` files directly, so the site has to be **built** (`npm run build` → `dist/`) rather than served straight from the repository root.
+
+The included workflow (`.github/workflows/deploy.yml`) builds the app and publishes the result automatically:
+
+1. Push this repository to GitHub (onto the `main` or `master` branch).
+2. In your repository on GitHub, go to **Settings → Pages**.
+3. Under **Build and deployment → Source**, choose **GitHub Actions** (not *"Deploy from a branch"*).
+4. Wait ~1 minute for the **Deploy to GitHub Pages** workflow in the **Actions** tab to finish, then open the URL shown there (`https://<your-username>.github.io/<repo-name>/`).
+
+### Other hosts (Vercel / Netlify / Cloudflare Pages)
+
+- **Build command:** `npm run build`
+- **Output directory:** `dist`

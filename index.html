@@ -15,7 +15,26 @@
   </head>
   <body class="bg-stone-50 text-stone-900 antialiased selection:bg-amber-600 selection:text-white overflow-hidden">
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <noscript>ARCHIFORMA needs JavaScript enabled to run.</noscript>
+    <script type="module" src="./src/main.tsx"></script>
+    <script>
+      // If the app hasn't mounted after a few seconds, the site is almost
+      // certainly serving the raw repo (e.g. GitHub Pages set to "Deploy from a
+      // branch") instead of the built dist/ folder — browsers refuse to run raw
+      // .tsx files. Show a short explanation instead of a blank page.
+      setTimeout(function () {
+        var root = document.getElementById('root');
+        if (root && !root.hasChildNodes()) {
+          root.innerHTML =
+            '<div style="font-family:system-ui,sans-serif;max-width:560px;margin:10vh auto;padding:24px;line-height:1.5;color:#1c1917">' +
+            '<h1 style="font-size:18px;font-weight:600;margin:0 0 8px">ARCHIFORMA wasn\u2019t built before publishing</h1>' +
+            '<p style="margin:0 0 12px;color:#57534e">This page is serving the raw TypeScript source (<code>src/main.tsx</code>), which browsers can\u2019t run directly.</p>' +
+            '<p style="margin:0 0 8px"><strong>On GitHub Pages:</strong> open <em>Settings \u2192 Pages</em> and set <strong>Source</strong> to <strong>GitHub Actions</strong>. The included workflow builds the app automatically.</p>' +
+            '<p style="margin:0;color:#57534e"><strong>Locally:</strong> run <code>npm install &amp;&amp; npm run dev</code> (or <code>npm run build &amp;&amp; npm run preview</code>).</p>' +
+            '</div>';
+        }
+      }, 6000);
+    </script>
   </body>
 </html>
 

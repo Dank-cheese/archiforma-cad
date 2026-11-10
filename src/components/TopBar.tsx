@@ -664,6 +664,24 @@ export const TopBar: React.FC<TopBarProps> = ({
                   <Save className="w-4 h-4 text-stone-500" />
                   <span>Save Project (.json)</span>
                 </button>
+                <a
+                  href="/archiforma_latest.zip"
+                  download="archiforma_latest.zip"
+                  role="menuitem"
+                  aria-label="Download Project Source Code ZIP"
+                  onClick={() => setMenuOpen(false)}
+                  className={`w-full px-3 py-2 text-left flex items-center gap-2.5 cursor-pointer ${
+                    darkMode ? 'hover:bg-stone-800' : 'hover:bg-stone-100'
+                  }`}
+                >
+                  <Download className="w-4 h-4 text-amber-600" />
+                  <div>
+                    <div className="font-medium">Download Source Code (.zip)</div>
+                    <div className="text-[10px] text-stone-500 dark:text-stone-400">
+                      Complete Archiforma source archive
+                    </div>
+                  </div>
+                </a>
 
                 <div
                   className={`my-1 border-t ${

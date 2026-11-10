@@ -193,7 +193,10 @@ function loadInitialModel(): ArchModel {
           ...parsed.layers,
           ...defaultLayers.filter((dl) => !existingLayerIds.has(dl.id)),
         ];
+        const defaultVis = createDefaultVisibility();
+        const sample = createSampleProject();
         return {
+          ...sample,
           ...parsed,
           layers: mergedLayers,
           blocks: mergeById(parsed.blocks, createStarterBlocks()),
@@ -210,14 +213,18 @@ function loadInitialModel(): ArchModel {
           columnTypes: mergeById(parsed.columnTypes, createStarterColumnTypes()),
           doorTypes: mergeById(parsed.doorTypes, createStarterDoorTypes()),
           windowTypes: mergeById(parsed.windowTypes, createStarterWindowTypes()),
-          visibility: parsed.visibility || createDefaultVisibility(),
+          visibility: {
+            ...defaultVis,
+            ...(parsed.visibility || {}),
+          },
           sheets:
             parsed.sheets && parsed.sheets.length > 0
               ? parsed.sheets
               : createStarterSheets(),
           activeSheetId: parsed.activeSheetId || 'sheet-a101',
           settings: {
-            ...parsed.settings,
+            ...sample.settings,
+            ...(parsed.settings || {}),
             dimStyle: {
               ...DEFAULT_DIM_STYLE,
               ...(parsed.settings?.dimStyle || {}),
