@@ -117,6 +117,8 @@ export const TopBar: React.FC<TopBarProps> = ({
 }) => {
   const [elevMenuOpen, setElevMenuOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const elevBtnRef = useRef<HTMLButtonElement>(null);
+  const exportBtnRef = useRef<HTMLButtonElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dxfInputRef = useRef<HTMLInputElement>(null);
 
@@ -263,12 +265,13 @@ export const TopBar: React.FC<TopBarProps> = ({
           {onOpenElevation && (
             <div className="relative" style={{ order: 3 }}>
               <button
+                ref={elevBtnRef}
                 type="button"
                 aria-haspopup="menu"
                 aria-expanded={elevMenuOpen}
                 aria-label="Elevations menu"
                 onClick={() => setElevMenuOpen((o) => !o)}
-                className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-colors whitespace-nowrap cursor-pointer ${
+                className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-colors whitespace-nowrap cursor-pointer flex items-center gap-1 ${
                   viewMode === 'elevation' || viewMode === 'roofplan' || viewMode === 'foundationplan' || viewMode === 'framingplan' || viewMode === 'stsection'
                     ? 'bg-amber-600 text-white shadow-xs'
                     : darkMode
@@ -277,94 +280,112 @@ export const TopBar: React.FC<TopBarProps> = ({
                 }`}
                 title="Elevations & Roof Plan"
               >
-                {viewMode === 'elevation' && elevationDir
-                  ? `${elevationDir[0].toUpperCase()}${elevationDir.slice(1)} Elev.`
-                  : viewMode === 'roofplan'
-                  ? 'Roof Plan'
-                  : viewMode === 'foundationplan'
-                  ? 'Foundation Plan'
-                  : viewMode === 'framingplan'
-                  ? 'Framing Plan'
-                  : viewMode === 'stsection'
-                  ? 'Section'
-                  : 'Elevations'}{' '}
-                ▾
+                <span>
+                  {viewMode === 'elevation' && elevationDir
+                    ? `${elevationDir[0].toUpperCase()}${elevationDir.slice(1)} Elev.`
+                    : viewMode === 'roofplan'
+                    ? 'Roof Plan'
+                    : viewMode === 'foundationplan'
+                    ? 'Foundation Plan'
+                    : viewMode === 'framingplan'
+                    ? 'Framing Plan'
+                    : viewMode === 'stsection'
+                    ? 'Section'
+                    : 'Elevations'}
+                </span>
+                <ChevronDown className={`w-3.5 h-3.5 shrink-0 transition-transform ${elevMenuOpen ? 'rotate-180' : ''}`} />
               </button>
               {elevMenuOpen && (
-                <div
-                  role="menu"
-                  className={`absolute left-0 top-full mt-1 w-44 rounded-lg border shadow-xl z-50 py-1 text-xs ${
-                    darkMode ? 'bg-stone-900 border-stone-700 text-stone-100' : 'bg-white border-stone-200 text-stone-800'
-                  }`}
-                  onMouseLeave={() => setElevMenuOpen(false)}
-                >
-                  {(['north', 'south', 'east', 'west'] as ElevationDirection[]).map((d) => (
-                    <button
-                      key={d}
-                      type="button"
-                      role="menuitem"
-                      onClick={() => {
-                        setElevMenuOpen(false);
-                        onOpenElevation(d);
-                      }}
-                      className={`w-full text-left px-3 py-1.5 cursor-pointer ${darkMode ? 'hover:bg-stone-800' : 'hover:bg-stone-100'}`}
-                    >
-                      {d[0].toUpperCase() + d.slice(1)} Elevation
-                    </button>
-                  ))}
-                  {onOpenRoofPlan && (
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={() => {
-                        setElevMenuOpen(false);
-                        onOpenRoofPlan();
-                      }}
-                      className={`w-full text-left px-3 py-1.5 border-t cursor-pointer ${darkMode ? 'border-stone-800 hover:bg-stone-800' : 'border-stone-100 hover:bg-stone-100'}`}
-                    >
-                      Roof Plan
-                    </button>
-                  )}
-                  {onOpenStructuralView && (
-                    <>
-                      <div className={`px-3 pt-2 pb-0.5 text-[10px] font-bold uppercase tracking-wider border-t ${darkMode ? 'border-stone-800 text-blue-400' : 'border-stone-100 text-blue-700'}`}>Structural</div>
-                      {(
-                        [
-                          ['foundationplan', 'Foundation Plan'],
-                          ['framingplan', 'Framing Plan'],
-                        ] as const
-                      ).map(([k, label]) => (
-                        <button
-                          key={k}
-                          type="button"
-                          role="menuitem"
-                          onClick={() => {
-                            setElevMenuOpen(false);
-                            onOpenStructuralView(k);
-                          }}
-                          className={`w-full text-left px-3 py-1.5 cursor-pointer ${darkMode ? 'hover:bg-stone-800' : 'hover:bg-stone-100'}`}
-                        >
-                          {label}
-                        </button>
-                      ))}
-                      {sections.map((sec) => (
-                        <button
-                          key={sec.id}
-                          type="button"
-                          role="menuitem"
-                          onClick={() => {
-                            setElevMenuOpen(false);
-                            onOpenStructuralView('stsection', sec.id);
-                          }}
-                          className={`w-full text-left px-3 py-1.5 cursor-pointer ${darkMode ? 'hover:bg-stone-800' : 'hover:bg-stone-100'}`}
-                        >
-                          {sec.name}
-                        </button>
-                      ))}
-                      {sections.length === 0 && <div className="px-3 py-1 text-[11px] text-stone-500">Sections: draw one with SEC</div>}
-                    </>
-                  )}
-                </div>
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setElevMenuOpen(false)}
+                  />
+                  <div
+                    role="menu"
+                    style={{
+                      top: (elevBtnRef.current?.getBoundingClientRect().bottom ?? 48) + 4,
+                      left: Math.max(
+                        8,
+                        Math.min(
+                          elevBtnRef.current?.getBoundingClientRect().left ?? 120,
+                          (typeof window !== 'undefined' ? window.innerWidth : 1024) - 200
+                        )
+                      ),
+                    }}
+                    className={`fixed w-48 rounded-lg border shadow-xl z-50 py-1 text-xs ${
+                      darkMode ? 'bg-stone-900 border-stone-700 text-stone-100' : 'bg-white border-stone-200 text-stone-800'
+                    }`}
+                  >
+                    {(['north', 'south', 'east', 'west'] as ElevationDirection[]).map((d) => (
+                      <button
+                        key={d}
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          setElevMenuOpen(false);
+                          onOpenElevation(d);
+                        }}
+                        className={`w-full text-left px-3 py-1.5 cursor-pointer flex items-center justify-between ${darkMode ? 'hover:bg-stone-800' : 'hover:bg-stone-100'}`}
+                      >
+                        <span>{d[0].toUpperCase() + d.slice(1)} Elevation</span>
+                        <span className="text-[10px] font-mono opacity-60">{d[0].toUpperCase()}</span>
+                      </button>
+                    ))}
+                    {onOpenRoofPlan && (
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          setElevMenuOpen(false);
+                          onOpenRoofPlan();
+                        }}
+                        className={`w-full text-left px-3 py-1.5 border-t cursor-pointer ${darkMode ? 'border-stone-800 hover:bg-stone-800' : 'border-stone-100 hover:bg-stone-100'}`}
+                      >
+                        Roof Plan
+                      </button>
+                    )}
+                    {onOpenStructuralView && (
+                      <>
+                        <div className={`px-3 pt-2 pb-0.5 text-[10px] font-bold uppercase tracking-wider border-t ${darkMode ? 'border-stone-800 text-blue-400' : 'border-stone-100 text-blue-700'}`}>Structural</div>
+                        {(
+                          [
+                            ['foundationplan', 'Foundation Plan'],
+                            ['framingplan', 'Framing Plan'],
+                          ] as const
+                        ).map(([k, label]) => (
+                          <button
+                            key={k}
+                            type="button"
+                            role="menuitem"
+                            onClick={() => {
+                              setElevMenuOpen(false);
+                              onOpenStructuralView(k);
+                            }}
+                            className={`w-full text-left px-3 py-1.5 cursor-pointer ${darkMode ? 'hover:bg-stone-800' : 'hover:bg-stone-100'}`}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                        {sections.map((sec) => (
+                          <button
+                            key={sec.id}
+                            type="button"
+                            role="menuitem"
+                            onClick={() => {
+                              setElevMenuOpen(false);
+                              onOpenStructuralView('stsection', sec.id);
+                            }}
+                            className={`w-full text-left px-3 py-1.5 cursor-pointer ${darkMode ? 'hover:bg-stone-800' : 'hover:bg-stone-100'}`}
+                          >
+                            {sec.name}
+                          </button>
+                        ))}
+                        {sections.length === 0 && <div className="px-3 py-1 text-[11px] text-stone-500">Sections: draw one with SEC</div>}
+                      </>
+                    )}
+                  </div>
+                </>
               )}
             </div>
           )}
@@ -554,6 +575,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         {/* Project & Export Dropdown */}
         <div className="relative">
           <button
+            ref={exportBtnRef}
             type="button"
             onClick={() => setMenuOpen((v) => !v)}
             aria-expanded={menuOpen}
@@ -563,7 +585,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export &amp; File</span>
-            <ChevronDown className="w-3.5 h-3.5" />
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${menuOpen ? 'rotate-180' : ''}`} />
           </button>
 
           {menuOpen && (
@@ -575,7 +597,15 @@ export const TopBar: React.FC<TopBarProps> = ({
               <div
                 role="menu"
                 aria-label="Project and Export Options"
-                className={`absolute right-0 mt-1.5 w-64 rounded-lg border shadow-lg py-1.5 z-50 text-xs ${
+                style={{
+                  top: (exportBtnRef.current?.getBoundingClientRect().bottom ?? 48) + 6,
+                  right: Math.max(
+                    8,
+                    (typeof window !== 'undefined' ? window.innerWidth : 1024) -
+                      (exportBtnRef.current?.getBoundingClientRect().right ?? 1016)
+                  ),
+                }}
+                className={`fixed w-64 max-h-[80vh] overflow-y-auto rounded-lg border shadow-lg py-1.5 z-50 text-xs ${
                   darkMode
                     ? 'bg-stone-900 border-stone-700 text-stone-100'
                     : 'bg-white border-stone-200 text-stone-800'

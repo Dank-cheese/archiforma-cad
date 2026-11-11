@@ -1276,7 +1276,7 @@ export function elevationMarkerPositions(model: ArchModel, levelId?: string): Ar
   const minX = Math.min(...all.map((p) => p.x)), maxX = Math.max(...all.map((p) => p.x));
   const minY = Math.min(...all.map((p) => p.y)), maxY = Math.max(...all.map((p) => p.y));
   const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
-  const gap = Math.max(72, 0.2 * Math.max(maxX - minX, maxY - minY));
+  const gap = Math.max(116, 0.28 * Math.max(maxX - minX, maxY - minY));
   return [
     { dir: 'north', at: { x: cx, y: minY - gap }, pointing: { x: 0, y: 1 } },
     { dir: 'south', at: { x: cx, y: maxY + gap }, pointing: { x: 0, y: -1 } },

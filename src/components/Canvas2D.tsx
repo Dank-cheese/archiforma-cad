@@ -5026,11 +5026,14 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
             elevationMarkerPositions(model, activeLevelId).map((mk) => {
               const ang = (Math.atan2(mk.pointing.y, mk.pointing.x) * 180) / Math.PI;
               const letter = mk.dir[0].toUpperCase();
+              const strokeCol = darkMode ? '#f5f5f4' : '#1c1917';
+              const fillCol = darkMode ? '#1c1917' : '#ffffff';
+              const accentCol = darkMode ? '#f59e0b' : '#d97706';
               return (
                 <g
                   key={`elev-mk-${mk.dir}`}
                   transform={`translate(${mk.at.x}, ${mk.at.y}) scale(${1 / viewTransform.zoom})`}
-                  className="cursor-pointer"
+                  className="cursor-pointer group"
                   role="button"
                   aria-label={`Open ${mk.dir} elevation`}
                   onClick={(e) => {
@@ -5040,11 +5043,34 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
                   onPointerDown={(e) => e.stopPropagation()}
                 >
                   <title>{`${mk.dir[0].toUpperCase()}${mk.dir.slice(1)} Elevation — click to open`}</title>
+                  {/* Generous invisible touch/click target */}
+                  <circle r={22} fill="transparent" />
+                  {/* Directional elevation arrow nose */}
                   <g transform={`rotate(${ang})`}>
-                    <path d="M 22 0 L 9 -11 L 9 11 Z" fill={darkMode ? '#e7e5e4' : '#1c1917'} />
+                    <path
+                      d="M 21 0 L 7.8 -10.5 L 7.8 10.5 Z"
+                      fill={strokeCol}
+                      stroke={strokeCol}
+                      strokeWidth={1}
+                      strokeLinejoin="round"
+                    />
+                    <line x1={11} y1={0} x2={18} y2={0} stroke={accentCol} strokeWidth={1.6} />
                   </g>
-                  <circle r={11} fill={darkMode ? '#1c1917' : '#ffffff'} stroke={darkMode ? '#e7e5e4' : '#1c1917'} strokeWidth={1.6} />
-                  <text textAnchor="middle" dominantBaseline="central" fontSize={10} fontWeight={700} fill={darkMode ? '#e7e5e4' : '#1c1917'} fontFamily="Helvetica, Arial, sans-serif">
+                  {/* Marker Callout Bubble */}
+                  <circle
+                    r={11}
+                    fill={fillCol}
+                    stroke={strokeCol}
+                    strokeWidth={1.8}
+                  />
+                  <text
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fontSize={10.5}
+                    fontWeight={800}
+                    fill={strokeCol}
+                    fontFamily="Helvetica, Arial, sans-serif"
+                  >
                     {letter}
                   </text>
                 </g>
