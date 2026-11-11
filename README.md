@@ -15,14 +15,23 @@ Then open http://localhost:3000.
 
 ## Publish on GitHub Pages
 
-This is a Vite + React + TypeScript project. Browsers can't run `.tsx` files directly, so the site has to be **built** (`npm run build` → `dist/`) rather than served straight from the repository root.
+ARCHIFORMA is already pre-compiled into static HTML, JavaScript, and CSS (`index.html` and `assets/`), so it works with **both** GitHub Pages deployment methods out of the box:
 
-The included workflow (`.github/workflows/deploy.yml`) builds the app and publishes the result automatically:
+### Option A: Deploy from a branch (Quickest & Easiest — No build step required!)
 
-1. Push this repository to GitHub (onto the `main` or `master` branch).
-2. In your repository on GitHub, go to **Settings → Pages**.
-3. Under **Build and deployment → Source**, choose **GitHub Actions** (not *"Deploy from a branch"*).
-4. Wait ~1 minute for the **Deploy to GitHub Pages** workflow in the **Actions** tab to finish, then open the URL shown there (`https://<your-username>.github.io/<repo-name>/`).
+1. Push this repository to GitHub (or upload the files to your repository).
+2. On GitHub, navigate to **Settings → Pages**.
+3. Under **Build and deployment → Source**, keep or select **Deploy from a branch**.
+4. Select the **main** (or **master**) branch and folder **/ (root)** (or **/docs**).
+5. Click **Save**.
+6. GitHub Pages will publish the app immediately. Open your URL (`https://<your-username>.github.io/<repo-name>/`) and the CAD/BIM studio will launch directly!
+
+### Option B: Deploy via GitHub Actions
+
+If you want GitHub to automatically run `npm run build` whenever you push code changes:
+1. In your repository on GitHub, go to **Settings → Pages**.
+2. Under **Build and deployment → Source**, choose **GitHub Actions**.
+3. The included workflow (`.github/workflows/deploy.yml`) will build and publish automatically on every push.
 
 ### Other hosts (Vercel / Netlify / Cloudflare Pages)
 
