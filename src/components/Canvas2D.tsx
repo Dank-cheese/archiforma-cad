@@ -4421,7 +4421,7 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
       {uiMode === 'beginner' && hintText && (
         <div
           data-testid="beginner-canvas-hint"
-          className={`absolute top-2.5 left-1/2 -translate-x-1/2 z-20 px-3 py-1 rounded-lg border shadow-sm text-xs flex items-center gap-2 pointer-events-none max-w-md ${
+          className={`hidden lg:flex absolute top-2.5 left-1/2 -translate-x-1/2 z-20 px-3 py-1 rounded-lg border shadow-sm text-xs items-center gap-2 pointer-events-none max-w-md ${
             darkMode
               ? 'bg-stone-900/95 border-amber-500/40 text-stone-100'
               : 'bg-white/95 border-amber-500/50 text-stone-800'

@@ -256,6 +256,11 @@ export default function App() {
   const [blockEditorOpen, setBlockEditorOpen] = useState<boolean>(false);
   const [editingBlockId, setEditingBlockId] = useState<string | null>(null);
 
+  // Mobile collapsing tabs ('commands' | 'properties' | 'none') & Desktop sidebar collapse state
+  const [mobileActiveTab, setMobileActiveTab] = useState<'none' | 'commands' | 'properties'>('none');
+  const [desktopLeftCollapsed, setDesktopLeftCollapsed] = useState<boolean>(false);
+  const [desktopRightCollapsed, setDesktopRightCollapsed] = useState<boolean>(false);
+
   // Beginner / Pro UI Mode + First-run Guided Tour + Shortcut Cheat Sheet + Toasts
   const [uiMode, setUiMode] = useState<'beginner' | 'pro'>(() => {
     try {
@@ -267,6 +272,9 @@ export default function App() {
   });
   const [tourOpen, setTourOpen] = useState<boolean>(() => {
     try {
+      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('autostart') === '1') {
+        return false;
+      }
       return localStorage.getItem(TOUR_SEEN_KEY) !== 'true';
     } catch {
       return true;
@@ -3741,35 +3749,58 @@ export default function App() {
       />
 
       {/* 2. MIDDLE WORKSPACE (Left Toolbar + Center 2D/3D/Split/Schedules/Sheets Viewport + Right Properties/Layers) */}
-      <main className="flex-1 flex min-h-0 overflow-hidden">
+      <main className="flex-1 flex min-h-0 overflow-hidden relative">
         {(viewMode === '2d' || viewMode === '3d' || viewMode === 'split' || viewMode === 'elevation' || viewMode === 'roofplan' || viewMode === 'foundationplan' || viewMode === 'framingplan' || viewMode === 'stsection') && (
-          <LeftToolbar
-            activeTool={activeTool}
-            onSelectTool={(tool) => {
-              handleActivateTool(tool);
-            }}
-            onDeleteAction={handleDeleteSelectionOrStartErase}
-            leftTab={leftTab}
-            onChangeLeftTab={setLeftTab}
-            blocks={model.blocks ?? []}
-            activeInsertBlockId={activeInsertBlockId}
-            onSelectInsertBlock={(id) => {
-              setActiveInsertBlockId(id);
-            }}
-            insertRotation={insertRotation}
-            onChangeInsertRotation={setInsertRotation}
-            insertScale={insertScale}
-            onChangeInsertScale={setInsertScale}
-            onOpenBlockEditor={(blockId) => {
-              setEditingBlockId(blockId || activeInsertBlockId);
-              setBlockEditorOpen(true);
-            }}
-            units={model.settings.units}
-            darkMode={darkMode}
-            uiMode={uiMode}
-            viewCubeOn={viewCubeOn}
-            onToggleViewCube={() => setViewCube(!viewCubeOn)}
-          />
+          <>
+            <LeftToolbar
+              activeTool={activeTool}
+              onSelectTool={(tool) => {
+                handleActivateTool(tool);
+              }}
+              onDeleteAction={handleDeleteSelectionOrStartErase}
+              leftTab={leftTab}
+              onChangeLeftTab={setLeftTab}
+              blocks={model.blocks ?? []}
+              activeInsertBlockId={activeInsertBlockId}
+              onSelectInsertBlock={(id) => {
+                setActiveInsertBlockId(id);
+              }}
+              insertRotation={insertRotation}
+              onChangeInsertRotation={setInsertRotation}
+              insertScale={insertScale}
+              onChangeInsertScale={setInsertScale}
+              onOpenBlockEditor={(blockId) => {
+                setEditingBlockId(blockId || activeInsertBlockId);
+                setBlockEditorOpen(true);
+              }}
+              units={model.settings.units}
+              darkMode={darkMode}
+              uiMode={uiMode}
+              viewCubeOn={viewCubeOn}
+              onToggleViewCube={() => setViewCube(!viewCubeOn)}
+              mobileOpen={mobileActiveTab === 'commands'}
+              onMobileClose={() => setMobileActiveTab('none')}
+              desktopCollapsed={desktopLeftCollapsed}
+              onToggleDesktopCollapse={() => setDesktopLeftCollapsed((v) => !v)}
+            />
+            {desktopLeftCollapsed && (
+              <button
+                type="button"
+                onClick={() => setDesktopLeftCollapsed(false)}
+                aria-label="Expand Commands Sidebar"
+                title="Expand Commands & Tools Sidebar"
+                className={`hidden md:flex flex-col items-center justify-center gap-2 w-7 border-r z-20 cursor-pointer transition-colors ${
+                  darkMode
+                    ? 'bg-stone-900 border-stone-800 text-stone-300 hover:bg-stone-800 hover:text-amber-400'
+                    : 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50 hover:text-amber-600'
+                }`}
+              >
+                <span className="text-[10px] font-bold uppercase tracking-widest [writing-mode:vertical-rl] rotate-180">
+                  Commands ▸
+                </span>
+              </button>
+            )}
+          </>
         )}
 
         {/* Center Viewport Area */}
@@ -3867,7 +3898,9 @@ export default function App() {
                 onUndo={handleUndo}
                 onZoomExtents={handleZoomExtents}
                 onFocusProperties={() => {
-                  addToast('Properties panel focused in the right sidebar.', 'info');
+                  setMobileActiveTab('properties');
+                  setDesktopRightCollapsed(false);
+                  addToast('Properties panel focused.', 'info');
                 }}
                 onSelectTool={(tool) => handleActivateTool(tool)}
                 onDeleteSelection={handleDeleteSelectionOrStartErase}
@@ -4236,7 +4269,28 @@ export default function App() {
           }}
           onExplodeSelected={handleExplodeSelection}
           darkMode={darkMode}
+          mobileOpen={mobileActiveTab === 'properties'}
+          onMobileClose={() => setMobileActiveTab('none')}
+          desktopCollapsed={desktopRightCollapsed}
+          onToggleDesktopCollapse={() => setDesktopRightCollapsed((v) => !v)}
         />
+        )}
+        {(viewMode === '2d' || viewMode === '3d' || viewMode === 'split' || viewMode === 'elevation' || viewMode === 'roofplan' || viewMode === 'foundationplan' || viewMode === 'framingplan' || viewMode === 'stsection') && desktopRightCollapsed && (
+          <button
+            type="button"
+            onClick={() => setDesktopRightCollapsed(false)}
+            aria-label="Expand Properties Sidebar"
+            title="Expand Properties & Layers Sidebar"
+            className={`hidden md:flex flex-col items-center justify-center gap-2 w-7 border-l z-20 cursor-pointer transition-colors ${
+              darkMode
+                ? 'bg-stone-900 border-stone-800 text-stone-300 hover:bg-stone-800 hover:text-amber-400'
+                : 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50 hover:text-amber-600'
+            }`}
+          >
+            <span className="text-[10px] font-bold uppercase tracking-widest [writing-mode:vertical-rl]">
+              ◂ Properties
+            </span>
+          </button>
         )}
       </main>
 
@@ -4279,6 +4333,12 @@ export default function App() {
         darkMode={darkMode}
         inputRef={commandInputRef}
         uiMode={uiMode}
+        mobilePanel={mobileActiveTab}
+        onToggleMobilePanel={(panel) =>
+          setMobileActiveTab((cur) => (cur === panel ? 'none' : panel))
+        }
+        activeTool={activeTool}
+        selectedCount={selectedIds.length}
       />
 
       {/* 4. HELP MODAL (F1) */}

@@ -17,6 +17,7 @@ import {
   ChevronRight,
   Trash2,
   Plus,
+  PanelRightClose,
 } from 'lucide-react';
 import {
   ArchEntity,
@@ -82,6 +83,12 @@ interface RightPanelProps {
   onOpenCamera?: (id: string) => void;
   viewsSlot?: React.ReactNode;
   darkMode: boolean;
+  /** Mobile collapsing drawer state */
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
+  /** Desktop collapsible sidebar state */
+  desktopCollapsed?: boolean;
+  onToggleDesktopCollapse?: () => void;
 }
 
 const LengthInput: React.FC<{
@@ -168,7 +175,12 @@ export const RightPanel: React.FC<RightPanelProps> = ({
   structureJoins,
   onStructuralAction,
   darkMode,
+  mobileOpen = false,
+  onMobileClose,
+  desktopCollapsed = false,
+  onToggleDesktopCollapse,
 }) => {
+  const [propertiesExpanded, setPropertiesExpanded] = useState(true);
   const [showAdvancedProps, setShowAdvancedProps] = useState(false);
   const [editTypeInlineOpen, setEditTypeInlineOpen] = useState(false);
   const [showAddLayer, setShowAddLayer] = useState(false);
@@ -180,34 +192,104 @@ export const RightPanel: React.FC<RightPanelProps> = ({
   return (
     <aside
       aria-label="Properties and Layers Panel"
-      className={`w-68 sm:w-72 border-l flex flex-col overflow-y-auto select-none shrink-0 z-20 ${
+      data-testid="properties-panel"
+      className={`${
+        mobileOpen
+          ? 'fixed inset-x-0 top-12 bottom-[88px] z-40 w-full flex shadow-2xl'
+          : 'hidden'
+      } ${
+        desktopCollapsed
+          ? 'md:hidden'
+          : 'md:static md:inset-auto md:z-20 md:flex md:w-72 md:shadow-none'
+      } border-l flex-col overflow-y-auto select-none shrink-0 ${
         darkMode
           ? 'bg-stone-900 border-stone-800 text-stone-100'
           : 'bg-white border-stone-200 text-stone-900'
       }`}
     >
+      {/* Mobile Collapsing Header */}
+      <div className="flex md:hidden items-center justify-between gap-2 px-4 py-2.5 border-b border-stone-200 dark:border-stone-800 shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <Sliders className="w-4 h-4 text-amber-600 shrink-0" />
+          <span className="text-xs font-bold uppercase tracking-wider truncate">
+            Properties &amp; Layers
+          </span>
+          {selectedEntities.length > 0 && (
+            <span className="text-[11px] font-mono text-amber-600 dark:text-amber-400">
+              · {selectedEntities.length} Selected
+            </span>
+          )}
+        </div>
+        {onMobileClose && (
+          <button
+            type="button"
+            onClick={onMobileClose}
+            aria-label="Collapse Properties Tab"
+            data-testid="collapse-properties-mobile"
+            className={`min-h-[38px] px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 cursor-pointer shrink-0 ${
+              darkMode
+                ? 'bg-stone-800 border-stone-700 text-stone-100 hover:bg-stone-700'
+                : 'bg-stone-100 border-stone-300 text-stone-800 hover:bg-stone-200'
+            }`}
+          >
+            <span>Collapse</span>
+            <ChevronDown className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+
       {/* PROPERTIES SECTION */}
       <div className="p-4 border-b border-stone-200 dark:border-stone-800 space-y-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setPropertiesExpanded((v) => !v)}
+            aria-expanded={propertiesExpanded}
+            aria-label="Toggle Properties Section"
+            className="flex items-center gap-2 text-left cursor-pointer group"
+          >
             <Sliders className="w-4 h-4 text-amber-600" />
-            <h2 className="text-xs font-bold uppercase tracking-wider">
+            <h2 className="text-xs font-bold uppercase tracking-wider group-hover:text-amber-600 transition-colors">
               Properties (PR)
             </h2>
+            {propertiesExpanded ? (
+              <ChevronDown className="w-3.5 h-3.5 text-stone-400" />
+            ) : (
+              <ChevronRight className="w-3.5 h-3.5 text-stone-400" />
+            )}
+          </button>
+          <div className="flex items-center gap-2">
+            {selectedEntities.length > 0 && (
+              <button
+                type="button"
+                onClick={onDeleteSelected}
+                title="Delete Selected (E / DE / Del)"
+                className="text-xs text-red-600 hover:text-red-700 flex items-center gap-1 font-medium cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Delete</span>
+              </button>
+            )}
+            {onToggleDesktopCollapse && (
+              <button
+                type="button"
+                onClick={onToggleDesktopCollapse}
+                aria-label="Collapse Properties Sidebar"
+                title="Collapse Properties Sidebar"
+                className={`hidden md:inline-flex p-1 rounded border transition-colors cursor-pointer ${
+                  darkMode
+                    ? 'bg-stone-950 border-stone-800 text-stone-400 hover:text-stone-100 hover:border-stone-700'
+                    : 'bg-stone-100 border-stone-200 text-stone-600 hover:text-stone-900 hover:border-stone-300'
+                }`}
+              >
+                <PanelRightClose className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
-          {selectedEntities.length > 0 && (
-            <button
-              type="button"
-              onClick={onDeleteSelected}
-              title="Delete Selected (E / DE / Del)"
-              className="text-xs text-red-600 hover:text-red-700 flex items-center gap-1 font-medium cursor-pointer"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>Delete</span>
-            </button>
-          )}
         </div>
 
+        {propertiesExpanded && (
+          <div className="space-y-3">
         {/* Empty selection: show Drawing Settings + Default Wall Type */}
         {selectedEntities.length === 0 && (
           <div className="space-y-3 pt-1">
@@ -2018,6 +2100,8 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                 />
               </>
             )}
+          </div>
+        )}
           </div>
         )}
       </div>

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Terminal, ChevronUp, ChevronDown, CornerDownLeft } from 'lucide-react';
+import { Terminal, ChevronUp, ChevronDown, CornerDownLeft, Wrench, Sliders } from 'lucide-react';
 import {
   CommandLogEntry,
   OsnapResult,
@@ -23,6 +23,11 @@ interface CommandLineProps {
   darkMode: boolean;
   inputRef: React.RefObject<HTMLInputElement | null>;
   uiMode?: 'beginner' | 'pro';
+  /** Mobile collapsing tabs state */
+  mobilePanel?: 'none' | 'commands' | 'properties';
+  onToggleMobilePanel?: (panel: 'commands' | 'properties') => void;
+  activeTool?: string;
+  selectedCount?: number;
 }
 
 export const CommandLine: React.FC<CommandLineProps> = ({
@@ -39,9 +44,14 @@ export const CommandLine: React.FC<CommandLineProps> = ({
   darkMode,
   inputRef,
   uiMode = 'beginner',
+  mobilePanel = 'none',
+  onToggleMobilePanel,
+  activeTool = 'select',
+  selectedCount = 0,
 }) => {
   const [inputVal, setInputVal] = useState('');
   const [historyExpanded, setHistoryExpanded] = useState(false);
+  const [mobileCmdExpanded, setMobileCmdExpanded] = useState(false);
   const [selectedAutoIdx, setSelectedAutoIdx] = useState(0);
   const [osnapPopoverOpen, setOsnapPopoverOpen] = useState(false);
   const [trackPopoverOpen, setTrackPopoverOpen] = useState(false);
@@ -204,7 +214,7 @@ export const CommandLine: React.FC<CommandLineProps> = ({
         <div
           role="listbox"
           aria-label="Command Autocomplete Suggestions"
-          className={`absolute bottom-full left-4 mb-1.5 w-96 rounded-lg border shadow-xl overflow-hidden z-50 ${
+          className={`absolute bottom-full left-2 sm:left-4 right-2 sm:right-auto mb-1.5 sm:w-96 rounded-lg border shadow-xl overflow-hidden z-50 ${
             darkMode
               ? 'bg-stone-900 border-stone-700 text-stone-100'
               : 'bg-white border-stone-200 text-stone-900'
@@ -256,13 +266,13 @@ export const CommandLine: React.FC<CommandLineProps> = ({
 
       {/* One-line Step Hint Bar + Expandable Command History */}
       <div
-        className={`px-4 py-1.5 border-b text-xs flex flex-col gap-1 ${
+        className={`px-3 md:px-4 py-1 md:py-1.5 border-b text-xs flex flex-col gap-1 ${
           darkMode
             ? 'bg-stone-950/60 border-stone-800'
             : 'bg-stone-50 border-stone-200/80'
         }`}
       >
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-2 md:gap-4">
           <div className="flex items-center gap-2 min-w-0">
             <span
               className={`font-semibold shrink-0 ${
@@ -275,7 +285,7 @@ export const CommandLine: React.FC<CommandLineProps> = ({
             </span>
             <span
               data-testid="step-hint-banner"
-              className="font-medium text-stone-800 dark:text-stone-200"
+              className="font-medium text-stone-800 dark:text-stone-200 truncate md:whitespace-normal"
             >
               {(() => {
                 const match = hintText.match(/^(.*?)\[(.*?)\](.*?)$/);
@@ -319,7 +329,10 @@ export const CommandLine: React.FC<CommandLineProps> = ({
             type="button"
             aria-label="Toggle 50-line command history log"
             aria-expanded={historyExpanded}
-            onClick={() => setHistoryExpanded((v) => !v)}
+            onClick={() => {
+              setHistoryExpanded((v) => !v);
+              setMobileCmdExpanded(true);
+            }}
             className="text-[11px] font-mono text-stone-600 dark:text-stone-400 hover:text-amber-600 flex items-center gap-1 shrink-0 cursor-pointer"
             title="Toggle 50-line command history log"
           >
@@ -332,10 +345,12 @@ export const CommandLine: React.FC<CommandLineProps> = ({
           </button>
         </div>
 
-        {/* Scrollable History Log */}
+        {/* Scrollable History Log (Hidden on mobile unless Cmd Bar or History is expanded) */}
         <div
           ref={logContainerRef}
-          className={`font-mono text-[11px] overflow-y-auto space-y-0.5 ${
+          className={`${
+            mobileCmdExpanded || historyExpanded ? 'block' : 'hidden md:block'
+          } font-mono text-[11px] overflow-y-auto space-y-0.5 ${
             historyExpanded
               ? 'max-h-36 py-1'
               : isPro
@@ -363,14 +378,16 @@ export const CommandLine: React.FC<CommandLineProps> = ({
         </div>
       </div>
 
-      {/* Bottom Row: Command Input + Status Toggles */}
+      {/* Bottom Row: Command Input + Status Toggles (Collapsible on mobile, always visible on desktop) */}
       <div
-        className={`px-4 ${
+        className={`${
+          mobileCmdExpanded ? 'flex' : 'hidden md:flex'
+        } px-3 md:px-4 ${
           isPro ? 'py-2.5' : 'py-2'
-        } flex flex-wrap items-center justify-between gap-3`}
+        } flex-wrap items-center justify-between gap-2.5 md:gap-3 border-b md:border-b-0 border-stone-200 dark:border-stone-800`}
       >
         {/* Command Line Input */}
-        <div className="flex items-center gap-2 flex-1 min-w-[240px]">
+        <div className="flex items-center gap-2 flex-1 min-w-[220px]">
           <div className="flex items-center gap-1.5 text-xs font-mono font-semibold text-amber-600 dark:text-amber-400 shrink-0">
             <Terminal className="w-4 h-4" />
             <span>COMMAND:</span>
@@ -761,6 +778,111 @@ export const CommandLine: React.FC<CommandLineProps> = ({
             )}
           </div>
         </div>
+      </div>
+
+      {/* Mobile Collapsing Tabs Bar (Commands, Properties, Command Line) */}
+      <div
+        role="tablist"
+        aria-label="Mobile Collapsing Workspace Tabs"
+        data-testid="mobile-collapsing-tabs"
+        className={`grid md:hidden grid-cols-3 gap-1.5 px-2 py-1.5 ${
+          darkMode ? 'bg-stone-900' : 'bg-white'
+        }`}
+      >
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mobilePanel === 'commands'}
+          aria-expanded={mobilePanel === 'commands'}
+          aria-label="Commands Tab"
+          data-testid="mobile-commands-tab"
+          onClick={() => {
+            if (mobilePanel !== 'commands') setMobileCmdExpanded(false);
+            onToggleMobilePanel?.('commands');
+          }}
+          className={`min-h-[44px] px-2 py-1.5 rounded-lg border text-[11px] font-semibold flex items-center justify-between gap-1 transition-colors cursor-pointer whitespace-nowrap ${
+            mobilePanel === 'commands'
+              ? 'bg-amber-600 border-amber-600 text-white shadow-xs'
+              : darkMode
+              ? 'bg-stone-950 border-stone-800 text-stone-200 hover:border-stone-700'
+              : 'bg-stone-100 border-stone-200 text-stone-800 hover:border-stone-300'
+          }`}
+        >
+          <span className="flex items-center gap-1.5">
+            <Wrench className="w-3.5 h-3.5 shrink-0" />
+            <span>Commands</span>
+          </span>
+          {mobilePanel === 'commands' ? (
+            <ChevronDown className="w-3.5 h-3.5 shrink-0" />
+          ) : (
+            <ChevronUp className="w-3.5 h-3.5 shrink-0" />
+          )}
+        </button>
+
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mobilePanel === 'properties'}
+          aria-expanded={mobilePanel === 'properties'}
+          aria-label="Properties Tab"
+          data-testid="mobile-properties-tab"
+          onClick={() => {
+            if (mobilePanel !== 'properties') setMobileCmdExpanded(false);
+            onToggleMobilePanel?.('properties');
+          }}
+          className={`min-h-[44px] px-2 py-1.5 rounded-lg border text-[11px] font-semibold flex items-center justify-between gap-1 transition-colors cursor-pointer whitespace-nowrap ${
+            mobilePanel === 'properties'
+              ? 'bg-amber-600 border-amber-600 text-white shadow-xs'
+              : darkMode
+              ? 'bg-stone-950 border-stone-800 text-stone-200 hover:border-stone-700'
+              : 'bg-stone-100 border-stone-200 text-stone-800 hover:border-stone-300'
+          }`}
+        >
+          <span className="flex items-center gap-1.5">
+            <Sliders className="w-3.5 h-3.5 shrink-0" />
+            <span>
+              Properties{selectedCount > 0 ? ` (${selectedCount})` : ''}
+            </span>
+          </span>
+          {mobilePanel === 'properties' ? (
+            <ChevronDown className="w-3.5 h-3.5 shrink-0" />
+          ) : (
+            <ChevronUp className="w-3.5 h-3.5 shrink-0" />
+          )}
+        </button>
+
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mobileCmdExpanded}
+          aria-expanded={mobileCmdExpanded}
+          aria-label="Command Line Tab"
+          data-testid="mobile-cmdline-tab"
+          onClick={() => {
+            const next = !mobileCmdExpanded;
+            setMobileCmdExpanded(next);
+            if (next && mobilePanel !== 'none') {
+              onToggleMobilePanel?.(mobilePanel);
+            }
+          }}
+          className={`min-h-[44px] px-2 py-1.5 rounded-lg border text-[11px] font-semibold flex items-center justify-between gap-1 transition-colors cursor-pointer whitespace-nowrap ${
+            mobileCmdExpanded
+              ? 'bg-amber-600 border-amber-600 text-white shadow-xs'
+              : darkMode
+              ? 'bg-stone-950 border-stone-800 text-stone-200 hover:border-stone-700'
+              : 'bg-stone-100 border-stone-200 text-stone-800 hover:border-stone-300'
+          }`}
+        >
+          <span className="flex items-center gap-1.5">
+            <Terminal className="w-3.5 h-3.5 shrink-0" />
+            <span>Cmd Line</span>
+          </span>
+          {mobileCmdExpanded ? (
+            <ChevronDown className="w-3.5 h-3.5 shrink-0" />
+          ) : (
+            <ChevronUp className="w-3.5 h-3.5 shrink-0" />
+          )}
+        </button>
       </div>
     </footer>
   );

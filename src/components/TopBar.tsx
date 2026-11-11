@@ -125,14 +125,14 @@ export const TopBar: React.FC<TopBarProps> = ({
 
   return (
     <header
-      className={`h-13 px-4 border-b flex items-center justify-between gap-3 select-none shrink-0 z-30 ${
+      className={`h-12 md:h-13 px-2.5 md:px-4 border-b flex items-center justify-between gap-2 md:gap-3 select-none shrink-0 z-30 overflow-x-auto max-w-full ${
         darkMode
           ? 'bg-stone-900 border-stone-800 text-stone-100'
           : 'bg-white border-stone-200 text-stone-900'
       }`}
     >
       {/* Left: Brand & Editable Project Name */}
-      <div className="flex items-center gap-2.5 min-w-0">
+      <div className="flex items-center gap-2 shrink-0 min-w-0">
         <div className="flex items-center gap-2 shrink-0">
           <div className="w-7 h-7 rounded bg-amber-600 text-white flex items-center justify-center font-bold text-xs tracking-wider shadow-xs">
             AF
@@ -142,7 +142,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           </span>
         </div>
 
-        <span className="text-stone-300 dark:text-stone-700" aria-hidden="true">
+        <span className="hidden sm:inline text-stone-300 dark:text-stone-700" aria-hidden="true">
           /
         </span>
 
@@ -155,7 +155,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           value={projectName}
           onChange={(e) => onChangeProjectName(e.target.value)}
           aria-label="Project Name"
-          className={`px-2 py-1 text-sm font-medium rounded border border-transparent hover:border-stone-300 focus:border-amber-600 focus:outline-none transition-colors w-32 sm:w-44 truncate ${
+          className={`hidden sm:inline-block px-2 py-1 text-sm font-medium rounded border border-transparent hover:border-stone-300 focus:border-amber-600 focus:outline-none transition-colors w-32 sm:w-44 truncate ${
             darkMode
               ? 'bg-transparent hover:bg-stone-800 focus:bg-stone-800 text-stone-100'
               : 'bg-transparent hover:bg-stone-100 focus:bg-white text-stone-800'

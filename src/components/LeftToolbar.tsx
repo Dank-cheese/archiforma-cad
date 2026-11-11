@@ -71,6 +71,8 @@ import {
   Warehouse,
   Camera,
   Box as BoxIcon3d,
+  ChevronDown,
+  PanelLeftClose,
 } from 'lucide-react';
 import { BlockDefinition, ToolId, UnitSystem } from '../types/model';
 import { describeSvgArc, formatLength } from '../engine/geometry';
@@ -95,6 +97,12 @@ interface LeftToolbarProps {
   /** VIEW / NAVIGATION: ViewCube on / off (NAVVCUBE) */
   viewCubeOn?: boolean;
   onToggleViewCube?: () => void;
+  /** Mobile collapsing drawer state */
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
+  /** Desktop collapsible sidebar state */
+  desktopCollapsed?: boolean;
+  onToggleDesktopCollapse?: () => void;
 }
 
 interface ToolButtonConfig {
@@ -787,6 +795,10 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({
   uiMode = 'beginner',
   viewCubeOn = true,
   onToggleViewCube,
+  mobileOpen = false,
+  onMobileClose,
+  desktopCollapsed = false,
+  onToggleDesktopCollapse,
 }) => {
   const [openMore, setOpenMore] = React.useState<Record<string, boolean>>({});
   const isPro = uiMode === 'pro';
@@ -797,66 +809,123 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({
     return searchBlocks(blocks, libQuery, libCat).sort((a, b) => order.indexOf(a.category) - order.indexOf(b.category));
   }, [blocks, libQuery, libCat]);
 
+  const desktopWidthClass =
+    leftTab === 'library'
+      ? 'md:w-56'
+      : isPro
+      ? 'md:w-32'
+      : 'md:w-44';
+
   return (
     <aside
       aria-label="CAD Tools and Component Library"
+      data-testid="commands-panel"
       className={`${
-        leftTab === 'library'
-          ? 'w-52 sm:w-56'
-          : isPro
-          ? 'w-28 sm:w-32'
-          : 'w-40 sm:w-44'
-      } border-r flex flex-col py-2 px-2 gap-2 overflow-y-auto select-none shrink-0 z-20 transition-all ${
+        mobileOpen
+          ? 'fixed inset-x-0 top-12 bottom-[88px] z-40 w-full flex shadow-2xl'
+          : 'hidden'
+      } ${
+        desktopCollapsed
+          ? 'md:hidden'
+          : `md:static md:inset-auto md:z-20 md:flex md:shadow-none ${desktopWidthClass}`
+      } border-r flex-col py-2.5 md:py-2 px-3 md:px-2 gap-2 overflow-y-auto select-none shrink-0 transition-all ${
         darkMode
           ? 'bg-stone-900 border-stone-800 text-stone-200'
           : 'bg-white border-stone-200 text-stone-800'
       }`}
     >
-      {/* Segmented Tab Switcher: Tools vs Library */}
-      <div
-        className={`grid grid-cols-2 p-0.5 rounded-lg border text-[11px] font-semibold shrink-0 ${
-          darkMode
-            ? 'bg-stone-950 border-stone-800'
-            : 'bg-stone-100 border-stone-200'
-        }`}
-      >
-        <button
-          type="button"
-          onClick={() => onChangeLeftTab('tools')}
-          aria-label="Show Drafting, Modify and Annotation Tools"
-          aria-pressed={leftTab === 'tools'}
-          className={`flex items-center justify-center gap-1 py-1 rounded-md transition-colors cursor-pointer ${
-            leftTab === 'tools'
-              ? darkMode
-                ? 'bg-stone-800 text-amber-400 shadow-xs'
-                : 'bg-white text-stone-900 shadow-xs'
-              : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
+      {/* Mobile Collapsing Header */}
+      <div className="flex md:hidden items-center justify-between gap-2 pb-2 border-b border-stone-200 dark:border-stone-800 shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <Wrench className="w-4 h-4 text-amber-600 shrink-0" />
+          <span className="text-xs font-bold uppercase tracking-wider truncate">
+            Commands &amp; Tools
+          </span>
+          <span className="text-[11px] font-mono text-stone-500 dark:text-stone-400">
+            · {activeTool.toUpperCase()}
+          </span>
+        </div>
+        {onMobileClose && (
+          <button
+            type="button"
+            onClick={onMobileClose}
+            aria-label="Collapse Commands Tab"
+            data-testid="collapse-commands-mobile"
+            className={`min-h-[38px] px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 cursor-pointer shrink-0 ${
+              darkMode
+                ? 'bg-stone-800 border-stone-700 text-stone-100 hover:bg-stone-700'
+                : 'bg-stone-100 border-stone-300 text-stone-800 hover:bg-stone-200'
+            }`}
+          >
+            <span>Collapse</span>
+            <ChevronDown className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+
+      {/* Segmented Tab Switcher: Tools vs Library + Desktop Collapse Button */}
+      <div className="flex items-center gap-1 shrink-0">
+        <div
+          className={`flex-1 grid grid-cols-2 p-0.5 rounded-lg border text-[11px] font-semibold ${
+            darkMode
+              ? 'bg-stone-950 border-stone-800'
+              : 'bg-stone-100 border-stone-200'
           }`}
-          title="Drafting, Modify & Annotation Tools"
         >
-          <Wrench className="w-3 h-3" />
-          <span>Tools</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            onChangeLeftTab('library');
-            onSelectTool('insert');
-          }}
-          aria-label="Show Component and Block Library"
-          aria-pressed={leftTab === 'library'}
-          className={`flex items-center justify-center gap-1 py-1 rounded-md transition-colors cursor-pointer ${
-            leftTab === 'library'
-              ? darkMode
-                ? 'bg-stone-800 text-amber-400 shadow-xs'
-                : 'bg-white text-stone-900 shadow-xs'
-              : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
-          }`}
-          title="Component & Block Library (I / INSERT / CM)"
-        >
-          <Sofa className="w-3 h-3" />
-          <span>Library</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => onChangeLeftTab('tools')}
+            aria-label="Show Drafting, Modify and Annotation Tools"
+            aria-pressed={leftTab === 'tools'}
+            className={`flex items-center justify-center gap-1 py-1.5 md:py-1 rounded-md transition-colors cursor-pointer ${
+              leftTab === 'tools'
+                ? darkMode
+                  ? 'bg-stone-800 text-amber-400 shadow-xs'
+                  : 'bg-white text-stone-900 shadow-xs'
+                : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
+            }`}
+            title="Drafting, Modify & Annotation Tools"
+          >
+            <Wrench className="w-3 h-3" />
+            <span>Tools</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              onChangeLeftTab('library');
+              onSelectTool('insert');
+            }}
+            aria-label="Show Component and Block Library"
+            aria-pressed={leftTab === 'library'}
+            className={`flex items-center justify-center gap-1 py-1.5 md:py-1 rounded-md transition-colors cursor-pointer ${
+              leftTab === 'library'
+                ? darkMode
+                  ? 'bg-stone-800 text-amber-400 shadow-xs'
+                  : 'bg-white text-stone-900 shadow-xs'
+                : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
+            }`}
+            title="Component & Block Library (I / INSERT / CM)"
+          >
+            <Sofa className="w-3 h-3" />
+            <span>Library</span>
+          </button>
+        </div>
+
+        {onToggleDesktopCollapse && (
+          <button
+            type="button"
+            onClick={onToggleDesktopCollapse}
+            aria-label="Collapse Commands Sidebar"
+            title="Collapse Commands Sidebar"
+            className={`hidden md:inline-flex p-1.5 rounded-lg border transition-colors cursor-pointer shrink-0 ${
+              darkMode
+                ? 'bg-stone-950 border-stone-800 text-stone-400 hover:text-stone-100 hover:border-stone-700'
+                : 'bg-stone-100 border-stone-200 text-stone-600 hover:text-stone-900 hover:border-stone-300'
+            }`}
+          >
+            <PanelLeftClose className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
 
       {/* TAB 1: TOOLS */}
@@ -876,8 +945,8 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({
             <div
               className={
                 isPro
-                  ? 'grid grid-cols-3 gap-1'
-                  : 'grid grid-cols-2 gap-1'
+                  ? 'grid grid-cols-4 md:grid-cols-3 gap-1.5 md:gap-1'
+                  : 'grid grid-cols-3 sm:grid-cols-4 md:grid-cols-2 gap-1.5 md:gap-1'
               }
             >
               {[...group.tools, ...(group.more && openMore[group.heading] ? group.more : [])].map((tool) => {
@@ -890,13 +959,16 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({
                     onClick={() => {
                       if (tool.isImmediateErase) {
                         onDeleteAction();
+                        onMobileClose?.();
                       } else if (tool.customAction === 'open-library') {
                         onChangeLeftTab('library');
                         onSelectTool('insert');
                       } else if (tool.customAction === 'open-bedit') {
                         onOpenBlockEditor(activeInsertBlockId);
+                        onMobileClose?.();
                       } else {
                         onSelectTool(tool.id);
+                        onMobileClose?.();
                       }
                     }}
                     title={tool.tooltip}
@@ -904,14 +976,14 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({
                     aria-pressed={isActive}
                     className={
                       isPro
-                        ? `group relative flex items-center justify-center p-2 rounded-md transition-colors cursor-pointer ${
+                        ? `group relative flex items-center justify-center min-h-[44px] md:min-h-0 p-2 rounded-md transition-colors cursor-pointer ${
                             isActive
                               ? 'bg-amber-600 text-white shadow-xs'
                               : darkMode
                               ? 'hover:bg-stone-800 text-stone-300'
                               : 'hover:bg-stone-100 text-stone-700'
                           }`
-                        : `group relative flex flex-col items-center justify-center px-1.5 py-1.5 rounded-md text-center transition-colors cursor-pointer ${
+                        : `group relative flex flex-col items-center justify-center min-h-[48px] md:min-h-0 px-1.5 py-2 md:py-1.5 rounded-md text-center transition-colors cursor-pointer ${
                             isActive
                               ? 'bg-amber-600 text-white shadow-xs'
                               : darkMode
@@ -952,7 +1024,7 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({
                 type="button"
                 onClick={() => setOpenMore((m) => ({ ...m, [group.heading]: !m[group.heading] }))}
                 aria-expanded={!!openMore[group.heading]}
-                className="self-start px-1 text-[11px] font-semibold text-amber-600 hover:underline cursor-pointer"
+                className="self-start px-1 py-1 text-[11px] font-semibold text-amber-600 hover:underline cursor-pointer"
                 title={`More ${group.heading.toLowerCase()} tools: ${group.more.map((t) => `${t.label} (${t.alias})`).join(', ')}`}
               >
                 {openMore[group.heading] ? 'Less' : `More… (${group.more.length})`}
