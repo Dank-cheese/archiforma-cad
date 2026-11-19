@@ -1,0 +1,53 @@
+﻿ARCHIFORMA: Electrical, Plumbing & Block Converter
+Nov 19, 2026 · @Dai-Chi Tran
+Both are possible. Electrical and plumbing come first; they fit the app better than you might expect. The block converter can be built without risk to the app, as long as it stays a separate tool and only hands over files the app already knows how to read.
+1. Electrical and plumbing (priority)
+The app already has Arch, Struct and Combined views. The structural tools (columns, beams, footings, rebar) work like a separate trade drawn on the same model, and electrical and plumbing can be added the same way: a new MEP view that greys out the architecture, with its own layers, plan symbols and 3D objects. Sinks, tubs and showers already exist in the component library; they would gain pipe connections and the values used to size pipes.
+Electrical
+* Outlets, GFCI outlets, switches (single, 3-way, dimmer), ceiling and wall lights, fans, smoke/CO detectors, the panel, and data/TV points. Each has a mounting height, attaches to a wall or ceiling, and shows in 3D.
+* Switch-to-light wiring arcs and circuits, a panel schedule, and a simple load total.
+* Optional outlet auto-placement using the US rule that no point along a wall is more than 6 ft from an outlet, with GFCI flags in kitchens and baths. This is a helper only; local code and an electrician still decide.
+* An electrical plan sheet with a symbol legend.
+Plumbing
+* Supply pipes (cold and hot), waste and vent pipes, and gas lines, each with size and material. Drains keep their downhill slope (¼" per foot) automatically.
+* Pipes drawn in plan show as real pipes in 3D, and a run can go up or down between floors.
+* A fixture count and pipe sizing table based on the US plumbing code (IPC), plus a plumbing schedule. Again a helper, not code approval.
+* A plumbing plan sheet and an isometric view of the pipes.
+Build order
+Each step is tested in the app before the next one starts.
+1. Symbols and fixtures, the new MEP view, and the schedules.
+2. Wiring and pipe drawing.
+3. Sizing and code-check helpers.
+2. Block converter for Revit, AutoCAD and BIM downloads
+The worst case is that a file won't convert, and the app is untouched. With the safeguards below there is no need to scrap the idea, but it comes after electrical and plumbing.
+What it can read
+Format
+	Can convert?
+	Notes
+	DXF blocks
+	Yes, reliably
+	The app's DXF import currently skips blocks, so this alone is useful.
+	IFC
+	Yes
+	Uses an open-source library that runs in the browser. Most BIM download sites offer IFC.
+	OBJ, glTF, STL
+	Yes
+	
+
+	DWG
+	Partly
+	The only open-source browser reader handles older files well but fails on some newer ones. Its licence (GPL) means the converter must stay a separate tool; the app's code is not affected.
+	Revit RFA / RVT
+	No
+	Closed format that nothing outside Autodesk can read. Export to IFC or DWG from Revit, or pick IFC/DWG instead of RFA on the download site.
+	SketchUp SKP
+	No
+	
+
+	How it avoids breaking the app
+* It produces the same .archiblocks.json file used by Share / Import, and Import never overwrites anything; it only adds renamed copies.
+* It turns each object into a top-view plan symbol made of the lines, arcs and circles blocks already use, plus its real width, depth and height. It does not bring in detailed 3D meshes, which were removed from the app earlier.
+* It limits how many shapes each block gets, so a heavy manufacturer model can't bloat the project's autosave.
+* It checks every block against the app's own format before offering the download. A bad file fails inside the converter and never reaches the app.
+Next step
+* ☐ Confirm US units and codes (NEC for electrical, IPC/UPC symbols for plumbing), then start step 1 of electrical and plumbing.

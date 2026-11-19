@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ARCHIFORMA — 2D/3D Architectural CAD &amp; Light BIM</title>
+    <meta name="description" content="A simple, friendly 2D/3D architectural CAD and light BIM tool using AutoCAD and Revit commands and shortcuts." />
+    <meta property="og:title" content="ARCHIFORMA — 2D/3D Architectural CAD &amp; Light BIM" />
+    <meta property="og:description" content="A simple, friendly 2D/3D architectural CAD and light BIM tool using AutoCAD and Revit commands and shortcuts." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body class="bg-stone-50 text-stone-900 antialiased selection:bg-amber-600 selection:text-white overflow-hidden">
+    <div id="root"></div>
+    <noscript>ARCHIFORMA needs JavaScript enabled to run.</noscript>
+    <script>
+      // If the app hasn't rendered after a few seconds, show a hint instead of a blank page.
+      setTimeout(function () {
+        var root = document.getElementById('root');
+        if (root && !root.hasChildNodes()) {
+          root.innerHTML =
+            '<div style="font-family:system-ui,sans-serif;max-width:520px;margin:15vh auto;padding:24px;border:1px solid #e7e5e4;border-radius:12px;background:#fff;color:#1c1917">' +
+            '<h1 style="font-size:18px;margin:0 0 8px">ARCHIFORMA didn\'t load</h1>' +
+            '<p style="font-size:14px;color:#57534e;line-height:1.5;margin:0">The app\'s JavaScript failed to load. If you are viewing this on GitHub Pages, make sure ' +
+            'Settings &rarr; Pages &rarr; Source is set to <b>GitHub Actions</b> so the built version is served, not the raw source files.</p></div>';
+        }
+      }, 6000);
+    </script>
+    <script type="module" src="./src/main.tsx"></script>
+  </body>
+</html>
+
